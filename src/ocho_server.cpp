@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <iostream>
 
+//服务端bind listen  就可以accept write
+
 #define BUF_SIZE 1024
 
 //using namespace std;
