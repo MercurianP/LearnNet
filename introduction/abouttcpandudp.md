@@ -12,6 +12,15 @@ TCP传输没有边界，可能调用一次传输40字节，也可能传输10字�
 write()是在数据传输完成时返回。
 三次握手 四次挥手
 
+tcp服务端  socket();bind();listen();accept();
+客户端      socket；connect；
+connect中把IP和端口分配套接字。
+
+udp服务端  socket();bind() sentto recvfrom
+客户端
+
+
+
 # udp
 udp没有ACK应答消息，也没有给数据包编序号。
 tcp相对于udp，udp缺少流控制。相对速度快。
