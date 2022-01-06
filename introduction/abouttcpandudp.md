@@ -83,8 +83,62 @@ hostent* gethostbyaddr(char * addr, socklen_t,int family)
 
 ## 进程ID
 操作系统会为每个进程分配一个进程id： ps au 查看进程及其详细信息
+### fork
+unistd.h
+pid_t fork(void)-成功返回进程id 失败返回-1
+fork创建调用的进程的副本（复制正在运行的、调用fork函数的进程），两个进程都将执行fork函数调用后的语句，（父进程返回子进程id，子进程返回0）
 
+## 僵尸进程
+进程执行完main之后应该被销毁，但是有些进程会变成僵尸进程
+### 产生原因
+两个例子：1传递参数并调用exit函数2main函数执行return语句并返回值。
+这两个的返回值都会给操作系统，操作系统不会销毁子进程，直到把这些值传递给产生该子进程的父进程。还没返回给父进程的进程就是僵尸进程。
 
+所以销毁子进程防止僵尸进程的办法：向父进程传递eixt参数或者return 语句的返回值。
+传递的办法是父进程主动发起请求（函数调用）操作系统才会传递该值。也就是说如果父进程没有主动获取子进程的结束状态，那么操作系统会一直保存该子进程，让其处于僵尸状态。
+
+#### 后台执行程序： ./XXX &->&触发后台处理
+
+### 销毁僵尸进程的办法
+1:调用wait获得子进程的返回值  -sys/wait.h   pid_t wait(int * statloc)成功返回终止进程ID，失败返回-1
+
+如果调用时子进程终止，那么子进程终止时传递的返回值将保存到改函数的参数中，因为参数只想的单元还包含其他信息，通过WIFEXITED(子进程正常时返回true WEXITSTAUS返回子进程返回值)
+
+statloc通过宏定义传递状态信息
+
+TIPS:调用wait如果没有已终止的子进程，那么程序会处于阻塞状态。！！！！
+
+2:调用waitpid函数（防止阻塞）-sys/wait.h  pid_t waitpid(pid_t pid ,int *statloc, int options)
+
+TIPS
+pid     设置终止子进程的ID，-1为任意进程
+options 设置 WNOHANG 返回零，退出函数。这就能实现非阻塞
+
+## 信号处理siganal handling->什么时候销毁进程
+因为主进程不能一直像在waitpid中那样一直刷新等待，所以采用信号处理机制，操作系统在发生特定事件的时候给
+
+#include< signal.h> void (*signal (int signo, void (*func) (int) )) (int)
+函数的返回类型为函数指针 signal是函数名  变量是int 和 *func函数指针
+当发生signo（SIGALRM已到通过调用alarm函数注册的时间 SIGINT输入ctrl+c SIGchLD子进程终止） 三种情况时，调用函数指针
+
+注册信号就是调用相关函数，当发生一些该情况时就能调用函数
+
+### sigaction函数：类似于signal函数
+
+## 多任务并发服务器
+### 基于进程
+通过信号函数 waitpid 终止进程
+
+### 分割IO
+客户端通过 两个线程进行读写，这样可以使得数据可以继续进行。
+
+# 11进程通讯
+两个进程之间交换数据，其实就是共同使用一片内存
+## 管道实现进程间通信（PIPE）
+管道不属于进程的资源，其和套接字一样，属于操作系统，不是fork的对象
+#include <unistd.h> int pipe(int filedes[2])
+[0]通过管道接受数据时使用的文件描述符
+[1]发送时使用的文件描述符
 
 
 

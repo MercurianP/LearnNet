@@ -1,3 +1,5 @@
+//保证数据读齐的回声服务器 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
